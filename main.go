@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"go.uber.org/zap"
+	eventsapi "labs/htmx-blog/api/events"
 	privateapi "labs/htmx-blog/api/private"
 	publicapi "labs/htmx-blog/api/public"
 	"labs/htmx-blog/biz/models"
@@ -12,10 +14,6 @@ import (
 	custhttp "labs/htmx-blog/internal/http"
 	custmqtt "labs/htmx-blog/internal/mqtt"
 	"time"
-
-	"github.com/eclipse/paho.golang/autopaho"
-	"github.com/eclipse/paho.golang/paho"
-	"go.uber.org/zap"
 )
 
 func main() {
@@ -53,18 +51,12 @@ func main() {
 					custmqtt.InitClient(
 						context.Background(),
 						custmqtt.WithClientGlobalConfigs(&configs.MqttStore),
-						custmqtt.WithOnReconnection(func(cm *autopaho.ConnectionManager, connack *paho.Connack) {
-							logger.Info("MQTT Reconnection", zap.String("reason", connack.Properties.ReasonString))
-						}),
+						custmqtt.WithOnReconnection(eventsapi.Register),
 						custmqtt.WithOnConnectError(func(err error) {
 							logger.Error("MQTT Connection failed", zap.Error(err))
 						}),
-						custmqtt.WithClientError(func(err error) {
-							logger.Error("MQTT Client", zap.Error(err))
-						}),
-						custmqtt.WithOnServerDisconnect(func(d *paho.Disconnect) {
-							logger.Error("MQTT Server Disconnect", zap.String("reason", d.Properties.ReasonString))
-						}),
+						custmqtt.WithClientError(eventsapi.GlobalErrorHandler),
+						custmqtt.WithOnServerDisconnect(eventsapi.DisconnectHandler),
 					)
 					return nil
 				}),

@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	privateapi "labs/htmx-blog/api/private"
 	publicapi "labs/htmx-blog/api/public"
 	"labs/htmx-blog/internal/app"
 	"labs/htmx-blog/internal/configs"
+	custdb "labs/htmx-blog/internal/db"
 	"labs/htmx-blog/internal/events"
 	custhttp "labs/htmx-blog/internal/http"
 	custmqtt "labs/htmx-blog/internal/mqtt"
@@ -38,6 +40,16 @@ func main() {
 					custmqtt.WithGlobalConfigs(&configs.MqttStore),
 					custmqtt.WithZapLogger(logger),
 				)),
+				app.WithFactoryHook(func() error {
+					custdb.Init(
+						context.Background(),
+						custdb.WithGlobalConfigs(&configs.Sqlite),
+					)
+					return nil
+				}),
+				app.WithShutdownHook(func(ctx context.Context) {
+					custdb.Stop(ctx)
+				}),
 			}
 		},
 	)

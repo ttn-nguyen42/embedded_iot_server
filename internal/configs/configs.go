@@ -21,6 +21,7 @@ type Configs struct {
 	Logger     LoggerConfigs     `json:"logger,omitempty" yaml:"logger,omitempty"`
 	EventStore EventStoreConfigs `json:"eventStore,omitempty" yaml:"eventStore,omitempty"`
 	MqttStore  EventStoreConfigs `json:"mqttStore,omitempty" yaml:"mqttStore,omitempty"`
+	Sqlite     DatabaseConfigs   `json:"sqlite,omitempty" yaml:"sqlite,omitempty"`
 }
 
 func (c Configs) String() string {
@@ -82,6 +83,10 @@ type EventStoreConfigs struct {
 	Username string    `json:"username,omitempty" yaml:"username,omitempty"`
 	Password string    `json:"password,omitempty" yaml:"password,omitempty"`
 	Level    string    `json:"level,omitempty" yaml:"level,omitempty"`
+}
+
+type DatabaseConfigs struct {
+	Connection string `json:"connection,omitempty" yaml:"connection,omitempty"`
 }
 
 func (c *EventStoreConfigs) HasAuth() bool {

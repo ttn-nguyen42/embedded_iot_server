@@ -71,9 +71,20 @@ func Run(shutdownTimeout time.Duration, registration RegistrationFunc) {
 		}()
 	}
 
+	if opts.factoryHook != nil {
+		if err := opts.factoryHook(); err != nil {
+			logger.Fatalf("Run: factoryHook err = %s", err)
+			return
+		}
+	}
+
 	<-quit
 	ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 	defer cancel()
+
+	if opts.shutdownHook != nil {
+		opts.shutdownHook(ctx)
+	}
 
 	var wg sync.WaitGroup
 
@@ -117,11 +128,16 @@ func Run(shutdownTimeout time.Duration, registration RegistrationFunc) {
 }
 
 type RegistrationFunc func(configs *configs.Configs, logger *zap.Logger) []Optioner
+type FactoryHook func() error
+type ShutdownHook func(ctx context.Context)
 
 type Options struct {
 	httpServers []*custhttp.HttpServer
 	natsServers []*events.EmbeddedNats
 	mqttServers []*custmqtt.EmbeddedMqtt
+
+	factoryHook  FactoryHook
+	shutdownHook ShutdownHook
 }
 
 type Optioner func(opts *Options)
@@ -147,5 +163,17 @@ func WithMqttServer(server *custmqtt.EmbeddedMqtt) Optioner {
 		if server != nil {
 			opts.mqttServers = append(opts.mqttServers, server)
 		}
+	}
+}
+
+func WithFactoryHook(cb FactoryHook) Optioner {
+	return func(opts *Options) {
+		opts.factoryHook = cb
+	}
+}
+
+func WithShutdownHook(cb ShutdownHook) Optioner {
+	return func(opts *Options) {
+		opts.shutdownHook = cb
 	}
 }

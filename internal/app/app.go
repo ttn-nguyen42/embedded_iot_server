@@ -72,6 +72,7 @@ func Run(shutdownTimeout time.Duration, registration RegistrationFunc) {
 	}
 
 	if opts.factoryHook != nil {
+		time.Sleep(time.Second * 2)
 		if err := opts.factoryHook(); err != nil {
 			logger.Fatalf("Run: factoryHook err = %s", err)
 			return

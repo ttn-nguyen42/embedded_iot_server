@@ -36,6 +36,7 @@ func main() {
 				)),
 				app.WithMqttServer(custmqtt.New(
 					custmqtt.WithGlobalConfigs(&configs.MqttStore),
+					custmqtt.WithZapLogger(logger),
 				)),
 			}
 		},

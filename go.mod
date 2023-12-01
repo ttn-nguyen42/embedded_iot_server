@@ -5,6 +5,7 @@ go 1.21.4
 require (
 	github.com/gofiber/fiber/v2 v2.51.0
 	github.com/mochi-mqtt/server/v2 v2.4.2
+	go.mrchanchal.com/zaphandler v0.0.0-20230611140024-bd4fd80897ad
 )
 
 require (
@@ -14,8 +15,11 @@ require (
 	github.com/nats-io/nkeys v0.4.6 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/rs/xid v1.4.0 // indirect
+	github.com/stretchr/testify v1.8.4 // indirect
+	go.uber.org/goleak v1.2.1 // indirect
 	golang.org/x/crypto v0.15.0 // indirect
 	golang.org/x/time v0.4.0 // indirect
+	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 )
 
 require (
@@ -27,7 +31,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/nats-io/nats-server/v2 v2.10.5
 	github.com/philhofer/fwd v1.1.2 // indirect
-	github.com/rivo/uniseg v0.2.0 // indirect
+	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/tinylib/msgp v1.1.8 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.50.0 // indirect

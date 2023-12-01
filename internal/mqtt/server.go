@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"labs/htmx-blog/internal/configs"
 	custerror "labs/htmx-blog/internal/error"
+	"labs/htmx-blog/internal/logger"
 	"log"
 	"log/slog"
 	"os"
@@ -13,6 +14,7 @@ import (
 	mqtt "github.com/mochi-mqtt/server/v2"
 	"github.com/mochi-mqtt/server/v2/hooks/auth"
 	"github.com/mochi-mqtt/server/v2/listeners"
+	"go.uber.org/zap"
 )
 
 type EmbeddedMqtt struct {
@@ -106,11 +108,16 @@ func buildMqttOptions(options *Options) *mqtt.Options {
 
 	mqttOptions := &mqtt.Options{}
 
-	if len(logLevel) > 0 {
-		slogger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-			Level: parseLogLevel(logLevel),
-		}))
+	if options.logger != nil {
+		slogger := slog.New(logger.NewZapToSlogHandler(options.logger))
 		mqttOptions.Logger = slogger
+	} else {
+		if len(logLevel) > 0 {
+			slogger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+				Level: parseLogLevel(logLevel),
+			}))
+			mqttOptions.Logger = slogger
+		}
 	}
 
 	return mqttOptions
@@ -151,6 +158,7 @@ func makeTlsConfigs(globalConfigs *configs.EventStoreConfigs) (*tls.Config, erro
 
 type Options struct {
 	globalConfigs *configs.EventStoreConfigs
+	logger        *zap.Logger
 }
 
 type Optioner func(options *Options)
@@ -158,5 +166,11 @@ type Optioner func(options *Options)
 func WithGlobalConfigs(configs *configs.EventStoreConfigs) Optioner {
 	return func(options *Options) {
 		options.globalConfigs = configs
+	}
+}
+
+func WithZapLogger(logger *zap.Logger) Optioner {
+	return func(options *Options) {
+		options.logger = logger
 	}
 }

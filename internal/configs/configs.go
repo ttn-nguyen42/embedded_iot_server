@@ -32,7 +32,7 @@ func Init(ctx context.Context) {
 		globalConfigs = configs
 
 		contents, _ := json.Marshal(globalConfigs)
-		log.Print(string(contents))
+		log.Printf("configs.Init: config = %s", string(contents))
 	})
 }
 
@@ -51,6 +51,13 @@ type TlsConfig struct {
 	Cert      string `json:"cert,omitempty" yaml:"cert,omitempty"`
 	Key       string `json:"key,omitempty" yaml:"key,omitempty"`
 	Authority string `json:"authority,omitempty" yaml:"authority,omitempty"`
+}
+
+func (c TlsConfig) Enabled() bool {
+	if len(c.Cert) > 0 && len(c.Key) > 0 {
+		return true
+	}
+	return false
 }
 
 type LoggerConfigs struct {

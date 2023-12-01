@@ -6,6 +6,7 @@ import (
 	"labs/htmx-blog/internal/configs"
 	custerror "labs/htmx-blog/internal/error"
 	"log"
+	"time"
 
 	"github.com/nats-io/nats-server/v2/server"
 )
@@ -51,6 +52,7 @@ func buildServer(configs *configs.EventStoreConfigs, mqttConfigs *configs.EventS
 			log.Fatal(err)
 			return nil
 		}
+
 		mqttOpts = server.MQTTOpts{
 			Host:      mqttConfigs.Host,
 			Port:      mqttConfigs.Port,
@@ -61,25 +63,30 @@ func buildServer(configs *configs.EventStoreConfigs, mqttConfigs *configs.EventS
 	}
 
 	log.Printf("buildServer: build config for NATS server")
-	serverTls, err := buildTlsConfigs(&configs.Tls)
-	if err != nil {
-		log.Fatal(err)
-		return nil
-	}
 
 	serverOptions := server.Options{
 		Host:       configs.Host,
 		Port:       configs.Port,
 		ServerName: configs.Name,
 		MQTT:       mqttOpts,
-		TLSConfig:  serverTls,
-		Username:   configs.Username,
-		Password:   configs.Password,
-		JetStream:  true,
+		// TLSConfig:  serverTls,
+		Username:  configs.Username,
+		Password:  configs.Password,
+		JetStream: true,
 		// 1GB
 		JetStreamMaxMemory: 1073741824,
 		// 5GB
 		JetStreamMaxStore: 5737418240,
+	}
+
+	if configs.Tls.Enabled() {
+		serverTls, err := buildTlsConfigs(&configs.Tls)
+		if err != nil {
+			log.Fatal(err)
+			return nil
+		}
+		serverOptions.TLSConfig = serverTls
+		serverOptions.TLS = true
 	}
 
 	server, err := server.NewServer(&serverOptions)
@@ -127,11 +134,15 @@ func WithMqttConfigs(configs *configs.EventStoreConfigs) Optioner {
 
 func (n *EmbeddedNats) Start() error {
 	n.server.Start()
+	if !n.server.ReadyForConnections(time.Second * 3) {
+		return custerror.FormatInternalError("EmbeddedNats.Start: connection not ready")
+	}
 	return nil
 }
 
 func (n *EmbeddedNats) Stop(ctx context.Context) error {
 	n.server.Shutdown()
+	n.server.WaitForShutdown()
 	return nil
 }
 

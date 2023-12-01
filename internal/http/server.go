@@ -26,9 +26,10 @@ func New(options ...Optioner) *HttpServer {
 	}
 	globalConfigs := configs.configs
 	app := fiber.New(fiber.Config{
-		Network:      "tcp",
-		AppName:      globalConfigs.Name,
-		ErrorHandler: configs.errorHandler,
+		Network:               "tcp",
+		AppName:               globalConfigs.Name,
+		ErrorHandler:          configs.errorHandler,
+		DisableStartupMessage: true,
 	})
 	configs.registration(app)
 	if len(configs.middlewares) > 0 {

@@ -37,10 +37,6 @@
     "enabled": true,
     "name": "mqtt_store",
     "username": "",
-    "password": "",
-    "tls": {
-      "cert": "./certs/cert.pem",
-      "key": "./certs/key.pem"
-    }
+    "password": ""
   }
 }

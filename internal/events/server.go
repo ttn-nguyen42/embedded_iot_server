@@ -24,9 +24,8 @@ func New(options ...Optioner) *EmbeddedNats {
 		opt(&opts)
 	}
 	serverConfigs := opts.configs
-	mqttConfigs := opts.mqttConfigs
 
-	server := buildServer(serverConfigs, mqttConfigs)
+	server := buildServer(serverConfigs)
 
 	if server == nil {
 		return nil
@@ -39,44 +38,24 @@ func New(options ...Optioner) *EmbeddedNats {
 	}
 }
 
-func buildServer(configs *configs.EventStoreConfigs, mqttConfigs *configs.EventStoreConfigs) *server.Server {
-	if configs == nil || !configs.Enabled {
+func buildServer(configs *configs.EventStoreConfigs) *server.Server {
+	if configs == nil {
 		return nil
 	}
-	var mqttOpts server.MQTTOpts
-
-	if mqttConfigs != nil && mqttConfigs.Enabled {
-		log.Printf("buildServer: build config for MQTT server")
-		mqttTls, err := buildTlsConfigs(&mqttConfigs.Tls)
-		if err != nil {
-			log.Fatal(err)
-			return nil
-		}
-
-		mqttOpts = server.MQTTOpts{
-			Host:      mqttConfigs.Host,
-			Port:      mqttConfigs.Port,
-			TLSConfig: mqttTls,
-			Username:  mqttConfigs.Username,
-			Password:  mqttConfigs.Password,
-		}
+	if !configs.Enabled {
+		return nil
 	}
 
 	log.Printf("buildServer: build config for NATS server")
 
 	serverOptions := server.Options{
-		Host:       configs.Host,
-		Port:       configs.Port,
-		ServerName: configs.Name,
-		MQTT:       mqttOpts,
-		// TLSConfig:  serverTls,
-		Username:  configs.Username,
-		Password:  configs.Password,
-		JetStream: true,
-		// 1GB
-		JetStreamMaxMemory: 1073741824,
-		// 5GB
-		JetStreamMaxStore: 5737418240,
+		Host:                   configs.Host,
+		Port:                   configs.Port,
+		ServerName:             configs.Name,
+		Username:               configs.Username,
+		Password:               configs.Password,
+		JetStream:              true,
+		DisableJetStreamBanner: true,
 	}
 
 	if configs.Tls.Enabled() {
@@ -95,6 +74,7 @@ func buildServer(configs *configs.EventStoreConfigs, mqttConfigs *configs.EventS
 		return nil
 	}
 
+	server.ConfigureLogger()
 	return server
 }
 
@@ -114,8 +94,7 @@ func buildTlsConfigs(tlsConfigs *configs.TlsConfig) (*tls.Config, error) {
 }
 
 type Options struct {
-	configs     *configs.EventStoreConfigs
-	mqttConfigs *configs.EventStoreConfigs
+	configs *configs.EventStoreConfigs
 }
 
 type Optioner func(opts *Options)
@@ -123,12 +102,6 @@ type Optioner func(opts *Options)
 func WithNatsConfigs(configs *configs.EventStoreConfigs) Optioner {
 	return func(opts *Options) {
 		opts.configs = configs
-	}
-}
-
-func WithMqttConfigs(configs *configs.EventStoreConfigs) Optioner {
-	return func(opts *Options) {
-		opts.mqttConfigs = configs
 	}
 }
 

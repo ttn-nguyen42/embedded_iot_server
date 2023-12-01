@@ -29,7 +29,6 @@ func main() {
 				)),
 				app.WithNatsServer(events.New(
 					events.WithNatsConfigs(&configs.EventStore),
-					events.WithMqttConfigs(&configs.MqttStore),
 				)),
 			}
 		},

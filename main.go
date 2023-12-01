@@ -9,12 +9,14 @@ import (
 	custhttp "labs/htmx-blog/internal/http"
 	custmqtt "labs/htmx-blog/internal/mqtt"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 func main() {
 	app.Run(
 		time.Second*10,
-		func(configs *configs.Configs) []app.Optioner {
+		func(configs *configs.Configs, logger *zap.Logger) []app.Optioner {
 			return []app.Optioner{
 				app.WithHttpServer(custhttp.New(
 					custhttp.WithGlobalConfigs(&configs.Public),
@@ -30,6 +32,7 @@ func main() {
 				)),
 				app.WithNatsServer(events.New(
 					events.WithGlobalConfigs(&configs.EventStore),
+					events.WithZapLogger(logger.Sugar()),
 				)),
 				app.WithMqttServer(custmqtt.New(
 					custmqtt.WithGlobalConfigs(&configs.MqttStore),

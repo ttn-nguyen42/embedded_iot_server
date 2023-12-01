@@ -3,11 +3,12 @@ package configs
 import (
 	"context"
 	"encoding/json"
-	"gopkg.in/yaml.v3"
 	custerror "labs/htmx-blog/internal/error"
 	"log"
 	"os"
 	"sync"
+
+	"gopkg.in/yaml.v3"
 )
 
 var once sync.Once
@@ -22,6 +23,11 @@ type Configs struct {
 	MqttStore  EventStoreConfigs `json:"mqttStore,omitempty" yaml:"mqttStore,omitempty"`
 }
 
+func (c Configs) String() string {
+	configBytes, _ := json.Marshal(c)
+	return string(configBytes)
+}
+
 func Init(ctx context.Context) {
 	once.Do(func() {
 		configs, err := readConfig()
@@ -30,9 +36,6 @@ func Init(ctx context.Context) {
 			return
 		}
 		globalConfigs = configs
-
-		contents, _ := json.Marshal(globalConfigs)
-		log.Printf("configs.Init: config = %s", string(contents))
 	})
 }
 

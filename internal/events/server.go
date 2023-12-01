@@ -5,10 +5,12 @@ import (
 	"crypto/tls"
 	"labs/htmx-blog/internal/configs"
 	custerror "labs/htmx-blog/internal/error"
+	"labs/htmx-blog/internal/logger"
 	"log"
 	"time"
 
 	"github.com/nats-io/nats-server/v2/server"
+	"go.uber.org/zap"
 )
 
 type EmbeddedNats struct {
@@ -25,7 +27,7 @@ func New(options ...Optioner) *EmbeddedNats {
 	}
 	serverConfigs := opts.configs
 
-	server := buildServer(serverConfigs)
+	server := buildServer(&opts)
 
 	if server == nil {
 		return nil
@@ -38,15 +40,15 @@ func New(options ...Optioner) *EmbeddedNats {
 	}
 }
 
-func buildServer(configs *configs.EventStoreConfigs) *server.Server {
-	if configs == nil {
-		return nil
-	}
-	if !configs.Enabled {
+func buildServer(options *Options) *server.Server {
+	if options == nil {
 		return nil
 	}
 
-	log.Printf("buildServer: build config for NATS server")
+	configs := options.configs
+	if !configs.Enabled {
+		return nil
+	}
 
 	serverOptions := server.Options{
 		Host:                   configs.Host,
@@ -77,7 +79,14 @@ func buildServer(configs *configs.EventStoreConfigs) *server.Server {
 		return nil
 	}
 
-	server.ConfigureLogger()
+	if options.logger != nil {
+		server.SetLoggerV2(logger.NewZapToNatsLogger(options.logger),
+			true,
+			false,
+			false)
+	} else {
+		server.ConfigureLogger()
+	}
 	return server
 }
 
@@ -98,6 +107,7 @@ func buildTlsConfigs(tlsConfigs *configs.TlsConfig) (*tls.Config, error) {
 
 type Options struct {
 	configs *configs.EventStoreConfigs
+	logger  *zap.SugaredLogger
 }
 
 type Optioner func(opts *Options)
@@ -105,6 +115,12 @@ type Optioner func(opts *Options)
 func WithGlobalConfigs(configs *configs.EventStoreConfigs) Optioner {
 	return func(opts *Options) {
 		opts.configs = configs
+	}
+}
+
+func WithZapLogger(logger *zap.SugaredLogger) Optioner {
+	return func(opts *Options) {
+		opts.logger = logger
 	}
 }
 
@@ -117,7 +133,21 @@ func (n *EmbeddedNats) Start() error {
 }
 
 func (n *EmbeddedNats) Stop(ctx context.Context) error {
-	n.server.Shutdown()
+	var dur time.Duration
+	dl, ok := ctx.Deadline()
+	if !ok {
+		dur = 2 * time.Second
+	} else {
+		dur = time.Until(dl)
+	}
+	if n.server.ReadyForConnections(dur) {
+		defer func() {
+			if err := recover(); err != nil {
+				log.Printf("EmbeddedNats.recover: panic caught err = %s", err)
+			}
+		}()
+		n.server.Shutdown()
+	}
 	return nil
 }
 

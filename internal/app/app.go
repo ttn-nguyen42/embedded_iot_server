@@ -14,27 +14,29 @@ import (
 	"os/signal"
 	"sync"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 func Run(shutdownTimeout time.Duration, registration RegistrationFunc) {
 	ctx := context.Background()
-
-	log.Print("Run: initializing configurations")
 	configs.Init(ctx)
 
 	globalConfigs := configs.Get()
 
 	loggerConfigs := globalConfigs.Logger
+	logger.Init(ctx, logger.WithGlobalConfigs(&loggerConfigs))
 
-	options := registration(globalConfigs)
+	options := registration(globalConfigs, logger.Logger())
 
 	opts := Options{}
 	for _, optioner := range options {
 		optioner(&opts)
 	}
 
-	log.Print("Run: initializing loggers")
-	logger.Init(ctx, logger.WithGlobalConfigs(&loggerConfigs))
+	logger := zap.L().Sugar()
+
+	logger.Infof("Run: configs = %s", globalConfigs.String())
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)
@@ -42,9 +44,9 @@ func Run(shutdownTimeout time.Duration, registration RegistrationFunc) {
 	for _, s := range opts.httpServers {
 		s := s
 		go func() {
-			log.Printf("Run: start HTTP server name = %s", s.Name())
+			logger.Infof("Run: start HTTP server name = %s", s.Name())
 			if err := s.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-				log.Printf("Run: start HTTP server err = %s", err)
+				logger.Infof("Run: start HTTP server err = %s", err)
 			}
 		}()
 	}
@@ -52,9 +54,9 @@ func Run(shutdownTimeout time.Duration, registration RegistrationFunc) {
 	for _, s := range opts.natsServers {
 		s := s
 		go func() {
-			log.Printf("Run: start embedded NATS server name = %s", s.Name())
+			logger.Infof("Run: start embedded NATS server name = %s", s.Name())
 			if err := s.Start(); err != nil {
-				log.Printf("Run: start embedded NATS server err = %s", err)
+				logger.Infof("Run: start embedded NATS server err = %s", err)
 			}
 		}()
 	}
@@ -62,9 +64,9 @@ func Run(shutdownTimeout time.Duration, registration RegistrationFunc) {
 	for _, s := range opts.mqttServers {
 		s := s
 		go func() {
-			log.Printf("Run: start embedded MQTT server name = %s", s.Name())
+			logger.Infof("Run: start embedded MQTT server name = %s", s.Name())
 			if err := s.Start(); err != nil {
-				log.Printf("Run: start embedded MQTT server err = %s", err)
+				logger.Infof("Run: start embedded MQTT server err = %s", err)
 			}
 		}()
 	}
@@ -81,7 +83,7 @@ func Run(shutdownTimeout time.Duration, registration RegistrationFunc) {
 		defer wg.Done()
 		for _, s := range opts.httpServers {
 			s := s
-			log.Printf("Run: stop HTTP server name = %s", s.Name())
+			logger.Infof("Run: stop HTTP server name = %s", s.Name())
 			if err := s.Stop(ctx); err != nil {
 				log.Fatal(err)
 			}
@@ -91,7 +93,7 @@ func Run(shutdownTimeout time.Duration, registration RegistrationFunc) {
 	go func() {
 		for _, s := range opts.natsServers {
 			s := s
-			log.Printf("Run: stop NATS embedded server name = %s", s.Name())
+			logger.Infof("Run: stop NATS embedded server name = %s", s.Name())
 			if err := s.Stop(ctx); err != nil {
 				log.Fatal(err)
 			}
@@ -101,7 +103,7 @@ func Run(shutdownTimeout time.Duration, registration RegistrationFunc) {
 	go func() {
 		for _, s := range opts.mqttServers {
 			s := s
-			log.Printf("Run: stop MQTT embedded server name = %s", s.Name())
+			logger.Infof("Run: stop MQTT embedded server name = %s", s.Name())
 			if err := s.Stop(ctx); err != nil {
 				log.Fatal(err)
 			}
@@ -109,10 +111,12 @@ func Run(shutdownTimeout time.Duration, registration RegistrationFunc) {
 	}()
 
 	wg.Wait()
+
+	zap.L().Sync()
 	log.Print("Run: shutdown complete")
 }
 
-type RegistrationFunc func(configs *configs.Configs) []Optioner
+type RegistrationFunc func(configs *configs.Configs, logger *zap.Logger) []Optioner
 
 type Options struct {
 	httpServers []*custhttp.HttpServer

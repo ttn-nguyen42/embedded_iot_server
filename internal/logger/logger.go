@@ -25,7 +25,6 @@ func Init(ctx context.Context, options ...Optioner) {
 			log.Fatal(err)
 		}
 
-		logger.Sync()
 		zap.ReplaceGlobals(logger)
 	})
 }
@@ -55,13 +54,19 @@ func createLogger(opts *configs.LoggerConfigs) (*zap.Logger, error) {
 		Development:       false,
 		Encoding:          opts.Encoding,
 		EncoderConfig:     encoderConfig,
+		OutputPaths: []string{
+			"stdout",
+		},
+		ErrorOutputPaths: []string{
+			"stderr",
+		},
 	}
 
 	logger, err := logConfigs.Build()
 	if err != nil {
 		return nil, custerror.FormatInternalError("createLogger: create logger err = %s", err)
 	}
-	
+
 	return logger, nil
 }
 

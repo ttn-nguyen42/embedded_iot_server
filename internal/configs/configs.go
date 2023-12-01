@@ -78,6 +78,11 @@ type EventStoreConfigs struct {
 	Enabled  bool      `json:"enabled,omitempty" yaml:"enabled,omitempty"`
 	Username string    `json:"username,omitempty" yaml:"username,omitempty"`
 	Password string    `json:"password,omitempty" yaml:"password,omitempty"`
+	Level    string    `json:"level,omitempty" yaml:"level,omitempty"`
+}
+
+func (c *EventStoreConfigs) HasAuth() bool {
+	return len(c.Username) > 0 && len(c.Password) > 0
 }
 
 func readConfig() (*Configs, error) {

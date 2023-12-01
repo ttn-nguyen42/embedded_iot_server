@@ -52,10 +52,13 @@ func buildServer(configs *configs.EventStoreConfigs) *server.Server {
 		Host:                   configs.Host,
 		Port:                   configs.Port,
 		ServerName:             configs.Name,
-		Username:               configs.Username,
-		Password:               configs.Password,
 		JetStream:              true,
 		DisableJetStreamBanner: true,
+	}
+
+	if configs.HasAuth() {
+		serverOptions.Username = configs.Username
+		serverOptions.Password = configs.Password
 	}
 
 	if configs.Tls.Enabled() {
@@ -99,7 +102,7 @@ type Options struct {
 
 type Optioner func(opts *Options)
 
-func WithNatsConfigs(configs *configs.EventStoreConfigs) Optioner {
+func WithGlobalConfigs(configs *configs.EventStoreConfigs) Optioner {
 	return func(opts *Options) {
 		opts.configs = configs
 	}
@@ -115,7 +118,6 @@ func (n *EmbeddedNats) Start() error {
 
 func (n *EmbeddedNats) Stop(ctx context.Context) error {
 	n.server.Shutdown()
-	n.server.WaitForShutdown()
 	return nil
 }
 

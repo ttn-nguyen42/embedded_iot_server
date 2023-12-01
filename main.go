@@ -7,6 +7,7 @@ import (
 	"labs/htmx-blog/internal/configs"
 	"labs/htmx-blog/internal/events"
 	custhttp "labs/htmx-blog/internal/http"
+	custmqtt "labs/htmx-blog/internal/mqtt"
 	"time"
 )
 
@@ -28,7 +29,10 @@ func main() {
 					custhttp.WithMiddleware(privateapi.Middlewares(&configs.Private)...),
 				)),
 				app.WithNatsServer(events.New(
-					events.WithNatsConfigs(&configs.EventStore),
+					events.WithGlobalConfigs(&configs.EventStore),
+				)),
+				app.WithMqttServer(custmqtt.New(
+					custmqtt.WithGlobalConfigs(&configs.MqttStore),
 				)),
 			}
 		},

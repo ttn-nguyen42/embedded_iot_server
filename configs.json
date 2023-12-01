@@ -29,7 +29,8 @@
     "enabled": true,
     "name": "event_store",
     "username": "",
-    "password": ""
+    "password": "",
+    "level": "debug"
   },
   "mqttStore": {
     "host": "",
@@ -37,6 +38,7 @@
     "enabled": true,
     "name": "mqtt_store",
     "username": "",
-    "password": ""
+    "password": "",
+    "level": "debug"
   }
 }

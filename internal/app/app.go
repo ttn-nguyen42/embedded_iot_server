@@ -103,6 +103,7 @@ func Run(shutdownTimeout time.Duration, registration RegistrationFunc) {
 	}()
 
 	go func() {
+		defer wg.Done()
 		for _, s := range opts.natsServers {
 			s := s
 			logger.Infof("Run: stop NATS embedded server name = %s", s.Name())
@@ -113,6 +114,7 @@ func Run(shutdownTimeout time.Duration, registration RegistrationFunc) {
 	}()
 
 	go func() {
+		defer wg.Done()
 		for _, s := range opts.mqttServers {
 			s := s
 			logger.Infof("Run: stop MQTT embedded server name = %s", s.Name())

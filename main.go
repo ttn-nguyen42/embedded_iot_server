@@ -29,6 +29,7 @@ func main() {
 					custhttp.WithErrorHandler(publicapi.GlobalErrorHandler()),
 					custhttp.WithRegistration(publicapi.ServiceRegistration()),
 					custhttp.WithMiddleware(publicapi.Middlewares(&configs.Public)...),
+					custhttp.WithTemplatePath("./templates"),
 				)),
 				app.WithHttpServer(custhttp.New(
 					custhttp.WithGlobalConfigs(&configs.Private),

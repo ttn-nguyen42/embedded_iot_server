@@ -10,6 +10,7 @@ import (
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/template/html/v2"
 )
 
 type RegistrationFunc func(app *fiber.App)
@@ -24,17 +25,27 @@ func New(options ...Optioner) *HttpServer {
 	for _, option := range options {
 		option(configs)
 	}
+
 	globalConfigs := configs.configs
-	app := fiber.New(fiber.Config{
+	httpConfigs := fiber.Config{
 		Network:               "tcp",
 		AppName:               globalConfigs.Name,
 		ErrorHandler:          configs.errorHandler,
 		DisableStartupMessage: true,
-	})
+	}
+
+	if configs.templatePath != "" {
+		engine := html.New(configs.templatePath, ".html")
+		httpConfigs.Views = engine
+	}
+	
+	app := fiber.New(httpConfigs)
+
 	configs.registration(app)
 	if len(configs.middlewares) > 0 {
 		app.Use(configs.middlewares...)
 	}
+
 	return &HttpServer{
 		app:     app,
 		configs: configs,
@@ -46,6 +57,7 @@ type HttpServerConfigs struct {
 	registration RegistrationFunc
 	errorHandler fiber.ErrorHandler
 	middlewares  []interface{}
+	templatePath string
 }
 
 type Optioner func(configs *HttpServerConfigs)
@@ -71,6 +83,12 @@ func WithRegistration(handler RegistrationFunc) Optioner {
 func WithMiddleware(middlewares ...interface{}) Optioner {
 	return func(configs *HttpServerConfigs) {
 		configs.middlewares = middlewares
+	}
+}
+
+func WithTemplatePath(path string) Optioner {
+	return func(configs *HttpServerConfigs) {
+		configs.templatePath = path
 	}
 }
 

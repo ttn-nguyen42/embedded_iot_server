@@ -56,3 +56,9 @@ func validateAddRoomRequest(req *models.CreateRoomRequest) error {
 	}
 	return nil
 }
+
+func UiDashboard(ctx *fiber.Ctx) error {
+	return ctx.Render("index", fiber.Map{
+		"Content": "Hello World",
+	})
+}

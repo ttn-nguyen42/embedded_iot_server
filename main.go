@@ -44,11 +44,16 @@ func main() {
 					custmqtt.WithZapLogger(zl),
 				)),
 				app.WithFactoryHook(func() error {
+					ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+					defer cancel()
+
 					custdb.Init(
 						context.Background(),
 						custdb.WithGlobalConfigs(&configs.Sqlite),
 					)
 					custdb.Migrate(models.Room{})
+
+					eventsapi.Init(ctx)
 
 					custmqtt.InitClient(
 						context.Background(),
@@ -57,8 +62,9 @@ func main() {
 						custmqtt.WithOnConnectError(func(err error) {
 							logger.Error("MQTT Connection failed", zap.Error(err))
 						}),
-						custmqtt.WithClientError(eventsapi.GlobalErrorHandler),
+						custmqtt.WithClientError(eventsapi.ClientErrorHandler),
 						custmqtt.WithOnServerDisconnect(eventsapi.DisconnectHandler),
+						custmqtt.WithHandlerRegister(eventsapi.RouterHandler()),
 					)
 					return nil
 				}),

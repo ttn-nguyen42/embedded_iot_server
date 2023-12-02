@@ -39,6 +39,12 @@ func InitClient(ctx context.Context, options ...ClientOptioner) {
 		}
 		connUrl.Host = hostname
 
+		router := paho.NewStandardRouter()
+
+		if opts.register != nil {
+			opts.register(router)
+		}
+
 		clientConfigs := autopaho.ClientConfig{
 			KeepAlive:         20,
 			ConnectRetryDelay: time.Second * 5,
@@ -48,7 +54,7 @@ func InitClient(ctx context.Context, options ...ClientOptioner) {
 				&connUrl,
 			},
 			ClientConfig: paho.ClientConfig{
-				Router: paho.NewStandardRouter(),
+				Router: router,
 			},
 		}
 
@@ -112,9 +118,12 @@ type ClientOptions struct {
 	connErrCallback  func(err error)
 	serverDisconnect func(d *paho.Disconnect)
 	clientErr        func(err error)
+	register         RouterRegister
 }
 
 type ClientOptioner func(options *ClientOptions)
+
+type RouterRegister func(router *paho.StandardRouter)
 
 func WithClientGlobalConfigs(configs *configs.EventStoreConfigs) ClientOptioner {
 	return func(options *ClientOptions) {
@@ -143,5 +152,11 @@ func WithOnServerDisconnect(cb func(d *paho.Disconnect)) ClientOptioner {
 func WithClientError(cb func(err error)) ClientOptioner {
 	return func(options *ClientOptions) {
 		options.clientErr = cb
+	}
+}
+
+func WithHandlerRegister(cb RouterRegister) ClientOptioner {
+	return func(options *ClientOptions) {
+		options.register = cb
 	}
 }

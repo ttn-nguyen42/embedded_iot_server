@@ -20,7 +20,7 @@
     }
   },
   "logger": {
-    "level": "debug",
+    "level": "info",
     "encoding": "console"
   },
   "eventStore": {

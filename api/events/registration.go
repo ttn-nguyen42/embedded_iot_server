@@ -2,7 +2,9 @@ package eventsapi
 
 import (
 	"context"
+	"labs/htmx-blog/helper"
 	"labs/htmx-blog/internal/logger"
+	custmqtt "labs/htmx-blog/internal/mqtt"
 	"time"
 
 	"github.com/eclipse/paho.golang/autopaho"
@@ -37,7 +39,7 @@ func makeSubsciptions(ctx context.Context, cm *autopaho.ConnectionManager, conna
 	}
 }
 
-func GlobalErrorHandler(err error) {
+func ClientErrorHandler(err error) {
 	logger := logger.Logger()
 
 	logger.Error("MQTT Client", zap.Error(err))
@@ -47,4 +49,22 @@ func DisconnectHandler(d *paho.Disconnect) {
 	logger := logger.Logger()
 
 	logger.Error("MQTT Server Disconnect", zap.String("reason", d.Properties.ReasonString))
+}
+
+func RouterHandler() custmqtt.RouterRegister {
+	return func(router *paho.StandardRouter) {
+		roomEventsHandler := GetRoomEventsHandler()
+		router.RegisterHandler(
+			"room_events/#",
+			paho.MessageHandler(WrapForHandlers(roomEventsHandler.Handle)),
+		)
+	}
+}
+
+func WrapForHandlers(handler func(p *paho.Publish) error) func(p *paho.Publish) {
+	return func(p *paho.Publish) {
+		if err := handler(p); err != nil {
+			helper.EventHandlerErrorHandler(err)
+		}
+	}
 }

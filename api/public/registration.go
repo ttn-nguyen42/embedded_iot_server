@@ -19,8 +19,9 @@ import (
 
 func ServiceRegistration() func(app *fiber.App) {
 	return func(app *fiber.App) {
-		aboutGroup := app.Group("/about")
-		aboutGroup.Get("/home", AboutHomeHandler)
+		apiGroup := app.Group("/api")
+		apiGroup.Get("/rooms", ApiRoomsHandler)
+		apiGroup.Post("/rooms", ApiAddRoomHandler)
 	}
 }
 

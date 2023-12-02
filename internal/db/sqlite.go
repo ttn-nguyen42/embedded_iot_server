@@ -49,10 +49,10 @@ func Init(ctx context.Context, options ...Optioner) {
 			return
 		}
 
-		LayeredInit()
-
 		db = client
 		gormDb = gormClient
+
+		LayeredInit()
 	})
 }
 

@@ -4,13 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	custcon "labs/htmx-blog/internal/concurrent"
 	custerror "labs/htmx-blog/internal/error"
+	"labs/htmx-blog/internal/logger"
 	"sync"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
-	"github.com/panjf2000/ants/v2"
+	"go.uber.org/zap"
 )
 
 var layeredOnce sync.Once
@@ -19,13 +19,11 @@ var layeredDb *LayeredDb
 
 type LayeredDb struct {
 	sqldb *sqlx.DB
-	pool  *ants.Pool
 }
 
 func NewLayeredDb() *LayeredDb {
 	return &LayeredDb{
 		sqldb: Db(),
-		pool:  custcon.New(100),
 	}
 }
 
@@ -45,6 +43,10 @@ func (db *LayeredDb) Select(ctx context.Context, selectBuilder sq.SelectBuilder,
 		return custerror.FormatInternalError("LayeredDb.Select: ToSql() err = %s", err)
 	}
 
+	logger.SDebug("LayeredDb.Select",
+		zap.String("query", queryStr),
+		zap.Any("arguments", arguments))
+
 	sqldb := db.sqldb
 
 	err = sqldb.SelectContext(ctx, dest, queryStr, arguments...)
@@ -61,6 +63,10 @@ func (db *LayeredDb) Insert(ctx context.Context, insertBuilder sq.InsertBuilder)
 		return custerror.FormatInternalError("LayeredDb.Insert: ToSql() err = %s", err)
 	}
 
+	logger.SDebug("LayeredDb.Insert",
+		zap.String("query", queryStr),
+		zap.Any("arguments", arguments))
+
 	sqldb := db.sqldb
 
 	_, err = sqldb.ExecContext(ctx, queryStr, arguments...)
@@ -76,6 +82,10 @@ func (db *LayeredDb) Update(ctx context.Context, updateBuilder sq.UpdateBuilder)
 	if err != nil {
 		return custerror.FormatInternalError("LayeredDb.Update: ToSql() err = %s", err)
 	}
+
+	logger.SDebug("LayeredDb.Update",
+		zap.String("query", queryStr),
+		zap.Any("arguments", arguments))
 
 	sqldb := db.sqldb
 
@@ -104,6 +114,10 @@ func (db *LayeredDb) Delete(ctx context.Context, deleteBuilder sq.DeleteBuilder)
 	if err != nil {
 		return custerror.FormatInternalError("LayeredDb.Delete: ToSql() err = %s", err)
 	}
+
+	logger.SDebug("LayeredDb.Delete",
+		zap.String("query", queryStr),
+		zap.Any("arguments", arguments))
 
 	sqldb := db.sqldb
 

@@ -7,9 +7,11 @@ import (
 	"time"
 
 	custdb "labs/htmx-blog/internal/db"
+	"labs/htmx-blog/internal/logger"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 type RoomService struct {
@@ -23,11 +25,17 @@ func NewRoomService() *RoomService {
 }
 
 func (s *RoomService) GetRooms(ctx context.Context, req *models.GetRoomsRequest) (*models.GetRoomsResponse, error) {
-	var m []models.Room
+	m := []models.Room{}
 	query := sq.Select("*").From("rooms")
 
 	page, limit := helper.GetPageAndLimit(&req.ListCommon)
-	query = query.Limit(limit).Offset(page * limit)
+	offset := page * limit
+	query = query.Limit(limit).Offset(offset)
+
+	logger.SDebug("RoomService.GetRooms",
+		zap.Uint64("page", page),
+		zap.Uint64("limit", limit),
+		zap.Uint64("offset", offset))
 
 	if err := s.db.Select(ctx, query, &m); err != nil {
 		return nil, err
@@ -53,10 +61,9 @@ func (s *RoomService) GetRoom(ctx context.Context, req *models.GetRoomRequest) (
 }
 
 func (s *RoomService) AddRoom(ctx context.Context, req *models.CreateRoomRequest) (*models.CreateRoomResponse, error) {
-	var m models.Room
-	m = models.Room{
+	m := models.Room{
 		Name:   req.Name,
-		Status: req.Status,
+		Status: models.RoomStatus_Empty,
 	}
 
 	id, _ := uuid.NewUUID()
@@ -68,7 +75,7 @@ func (s *RoomService) AddRoom(ctx context.Context, req *models.CreateRoomRequest
 		"name",
 		"status",
 	).Values(
-		id,
+		id.ID(),
 		time.Now().Format(time.RFC3339),
 		time.Now().Format(time.RFC3339),
 		m.Name,

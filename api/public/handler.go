@@ -61,7 +61,7 @@ func validateAddRoomRequest(req *models.CreateRoomRequest) error {
 func UiDashboard(ctx *fiber.Ctx) error {
 
 	return ctx.Render("index", fiber.Map{
-		"PartialTablePath":            "/partials/room_table",
+		"PartialTablePath":            "/partials/room_table?page=0&limit=999",
 		"PartialTableRefreshInterval": "5s",
 	})
 }
@@ -89,4 +89,25 @@ func UiPartialTable(ctx *fiber.Ctx) error {
 	return ctx.Render("partials/room_table", fiber.Map{
 		"Rooms": modifiedRooms,
 	})
+}
+
+func UiAddRoomHandler(ctx *fiber.Ctx) error {
+	reqModel := &models.CreateRoomRequest{}
+
+	reqModel.Name = ctx.FormValue("name")
+	
+	if err := validateAddRoomRequest(reqModel); err != nil {
+		logger.SInfo("ApiAddRoomHandler: validation error", zap.Error(err))
+		return err
+	}
+
+	logger.SInfo("ApiAddRoomHandler", zap.Any("req", reqModel))
+
+	resp, err := service.GetRoomService().AddRoom(ctx.Context(), reqModel)
+	if err != nil {
+		return err
+	}
+
+	ctx.JSON(resp)
+	return nil
 }

@@ -24,7 +24,8 @@ func ServiceRegistration() func(app *fiber.App) {
 		apiGroup := app.Group("/api")
 		apiGroup.Get("/rooms", ApiRoomsHandler)
 		apiGroup.Post("/rooms", ApiAddRoomHandler)
-
+		formGroup := app.Group("/forms")
+		formGroup.Post("/rooms", UiAddRoomHandler)
 	}
 }
 

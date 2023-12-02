@@ -9,9 +9,7 @@ require (
 	github.com/eclipse/paho.golang v0.12.0
 	github.com/glebarez/go-sqlite v1.21.2
 	github.com/gofiber/fiber/v2 v2.51.0
-	github.com/jinzhu/copier v0.3.5
 	github.com/jmoiron/sqlx v1.3.5
-	github.com/mitchellh/hashstructure/v2 v2.0.2
 	github.com/mochi-mqtt/server/v2 v2.4.2
 	github.com/panjf2000/ants/v2 v2.9.0
 	go.mrchanchal.com/zaphandler v0.0.0-20230611140024-bd4fd80897ad

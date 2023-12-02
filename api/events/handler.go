@@ -28,7 +28,8 @@ func (h *RoomEventsHandler) Handle(p *paho.Publish) error {
 
 	msg := p.Payload
 
-	var msgModel models.Room
+	var msgModel models.RoomStatusChanged
+	
 	if err := sonic.Unmarshal(msg, &msgModel); err != nil {
 		return custerror.FormatInvalidArgument("RoomEventsHandler.Unmarshal: err = %s", err)
 	}

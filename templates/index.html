@@ -6,13 +6,67 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>Dashboard</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon" />
+    <!-- Compressed CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/foundation-sites@6.8.1/dist/css/foundation.min.css"
+      crossorigin="anonymous"
+    />
+
+    <meta
+      name="description"
+      content="List of rooms and their occupancy status"
+    />
   </head>
   <body>
     <main>
-      <h1>Room Occupancy</h1>
-      <p>{{ .Content }}</p>
+      <div class="main-content">
+        <h1>Room Occupancy</h1>
+        <div class="main-table">
+          <table>
+            <thead>
+              <tr>
+                <th width="100">Room ID</th>
+                <th width="300">Name</th>
+                <th width="100">Status</th>
+                <th width="100">Last Updated</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{ range .Rooms }}
+              <tr>
+                <td>{{ .Id }}</td>
+                <td>{{ .Name }}</td>
+                {{ if (eq .Status "OCCUPIED") }}
+                <td><span class="label alert">Occupied</span></td>
+                {{ else }}
+                <td><span class="label success">Empty</span></td>
+                {{ end }}
+                <td>{{ .UpdatedAt }}</td>
+              </tr>
+              {{ end }}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </main>
+
+    <!-- Compressed JavaScript -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/foundation-sites@6.8.1/dist/js/foundation.min.js"
+      crossorigin="anonymous"
+    ></script>
     <script src="index.js"></script>
   </body>
-  <style></style>
+  <style>
+    .main-content {
+      padding: 3rem 3rem;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .main-table {
+      width: 100%;
+    }
+  </style>
 </html>

@@ -6,6 +6,7 @@ import (
 	"labs/htmx-blog/helper"
 	custerror "labs/htmx-blog/internal/error"
 	"labs/htmx-blog/internal/logger"
+	"time"
 
 	"github.com/bytedance/sonic"
 	"github.com/gofiber/fiber/v2"
@@ -58,7 +59,26 @@ func validateAddRoomRequest(req *models.CreateRoomRequest) error {
 }
 
 func UiDashboard(ctx *fiber.Ctx) error {
+	reqModel := &models.GetRoomsRequest{}
+	reqModel.Page, reqModel.Limit = helper.GetPageAndLimitFromCtx(ctx)
+
+	logger.SInfo("ApiRoomsHandler", zap.Any("req", reqModel))
+
+	resp, err := service.GetRoomService().GetRooms(ctx.Context(), reqModel)
+	if err != nil {
+		return err
+	}
+
+	modifiedRooms := []models.Room{}
+	for _, r := range resp.Rooms {
+		t, _ := time.Parse(time.RFC3339, r.UpdatedAt)
+		modifiedUpdateTime := t.Format(time.RFC822)
+		modifiedRoom := r
+		modifiedRoom.UpdatedAt = modifiedUpdateTime
+		modifiedRooms = append(modifiedRooms, modifiedRoom)
+	}
+
 	return ctx.Render("index", fiber.Map{
-		"Content": "Hello World",
+		"Rooms": modifiedRooms,
 	})
 }

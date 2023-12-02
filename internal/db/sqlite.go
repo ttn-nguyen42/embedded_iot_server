@@ -37,7 +37,7 @@ func Init(ctx context.Context, options ...Optioner) {
 			return
 		}
 
-		client, err := sqlx.Open("sqlite", globalConfigs.Connection)
+		client, err := sqlx.Connect("sqlite", globalConfigs.Connection)
 		if err != nil {
 			log.Fatalf("db.sqlite.Init: open err = %s", err)
 			return
@@ -48,6 +48,8 @@ func Init(ctx context.Context, options ...Optioner) {
 			log.Fatalf("db.sqlite.Init: gormClient err = %s", err)
 			return
 		}
+
+		LayeredInit()
 
 		db = client
 		gormDb = gormClient

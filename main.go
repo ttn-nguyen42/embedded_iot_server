@@ -7,6 +7,7 @@ import (
 	publicapi "labs/htmx-blog/api/public"
 	"labs/htmx-blog/biz/models"
 	"labs/htmx-blog/internal/app"
+	"labs/htmx-blog/internal/cache"
 	"labs/htmx-blog/internal/configs"
 	custdb "labs/htmx-blog/internal/db"
 	"labs/htmx-blog/internal/events"
@@ -51,7 +52,11 @@ func main() {
 						context.Background(),
 						custdb.WithGlobalConfigs(&configs.Sqlite),
 					)
-					custdb.Migrate(models.Room{})
+
+					custdb.Migrate(&models.Room{})
+
+					cache.Init()
+					custdb.LayeredInit()
 
 					eventsapi.Init(ctx)
 

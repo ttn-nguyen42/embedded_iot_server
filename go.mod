@@ -3,12 +3,15 @@ module labs/htmx-blog
 go 1.21.4
 
 require (
+	github.com/Masterminds/squirrel v1.5.4
 	github.com/bytedance/sonic v1.10.2
 	github.com/carlmjohnson/flowmatic v0.23.4
 	github.com/eclipse/paho.golang v0.12.0
 	github.com/glebarez/go-sqlite v1.21.2
 	github.com/gofiber/fiber/v2 v2.51.0
+	github.com/jinzhu/copier v0.3.5
 	github.com/jmoiron/sqlx v1.3.5
+	github.com/mitchellh/hashstructure/v2 v2.0.2
 	github.com/mochi-mqtt/server/v2 v2.4.2
 	github.com/panjf2000/ants/v2 v2.9.0
 	go.mrchanchal.com/zaphandler v0.0.0-20230611140024-bd4fd80897ad
@@ -18,19 +21,24 @@ require (
 
 require (
 	github.com/carlmjohnson/deque v0.23.1 // indirect
+	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20230717121745-296ad89f973d // indirect
 	github.com/chenzhuoyu/iasm v0.9.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
+	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.3 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
+	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0 // indirect
+	github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0 // indirect
 	github.com/mattn/go-sqlite3 v1.14.18 // indirect
 	github.com/minio/highwayhash v1.0.2 // indirect
 	github.com/nats-io/jwt/v2 v2.5.3 // indirect
 	github.com/nats-io/nkeys v0.4.6 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/rs/xid v1.4.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
@@ -48,6 +56,7 @@ require (
 
 require (
 	github.com/andybalholm/brotli v1.0.5 // indirect
+	github.com/dgraph-io/ristretto v0.1.1
 	github.com/google/uuid v1.4.0 // indirect
 	github.com/klauspost/compress v1.17.2 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect

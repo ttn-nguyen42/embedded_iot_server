@@ -37,6 +37,10 @@ func Logger() *zap.Logger {
 	return zap.L()
 }
 
+func Close() {
+	Logger().Sync()
+}
+
 func createLogger(opts *configs.LoggerConfigs) (*zap.Logger, error) {
 	lvl, err := parseLevel(opts.Level)
 	if err != nil {

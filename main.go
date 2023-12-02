@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"go.uber.org/zap"
 	eventsapi "labs/htmx-blog/api/events"
 	privateapi "labs/htmx-blog/api/private"
 	publicapi "labs/htmx-blog/api/public"
@@ -12,14 +11,17 @@ import (
 	custdb "labs/htmx-blog/internal/db"
 	"labs/htmx-blog/internal/events"
 	custhttp "labs/htmx-blog/internal/http"
+	"labs/htmx-blog/internal/logger"
 	custmqtt "labs/htmx-blog/internal/mqtt"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 func main() {
 	app.Run(
 		time.Second*10,
-		func(configs *configs.Configs, logger *zap.Logger) []app.Optioner {
+		func(configs *configs.Configs, zl *zap.Logger) []app.Optioner {
 			return []app.Optioner{
 				app.WithHttpServer(custhttp.New(
 					custhttp.WithGlobalConfigs(&configs.Public),
@@ -35,11 +37,11 @@ func main() {
 				)),
 				app.WithNatsServer(events.New(
 					events.WithGlobalConfigs(&configs.EventStore),
-					events.WithZapLogger(logger.Sugar()),
+					events.WithZapLogger(zl.Sugar()),
 				)),
 				app.WithMqttServer(custmqtt.New(
 					custmqtt.WithGlobalConfigs(&configs.MqttStore),
-					custmqtt.WithZapLogger(logger),
+					custmqtt.WithZapLogger(zl),
 				)),
 				app.WithFactoryHook(func() error {
 					custdb.Init(
@@ -63,6 +65,7 @@ func main() {
 				app.WithShutdownHook(func(ctx context.Context) {
 					custdb.Stop(ctx)
 					custmqtt.StopClient(ctx)
+					logger.Close()
 				}),
 			}
 		},

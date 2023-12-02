@@ -14,7 +14,6 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/helmet"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/gofiber/fiber/v2/middleware/monitor"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 )
 
@@ -60,10 +59,6 @@ func Middlewares(configs *configs.HttpConfigs) []interface{} {
 		favicon.New(favicon.Config{
 			URL:  "/favicon.ico",
 			File: "./public/favicon/favicon.ico",
-		}),
-		monitor.New(monitor.Config{
-			Title:   "Blog API",
-			Refresh: 5 * time.Second,
 		}),
 		cache.New(cache.Config{
 			Expiration:   time.Minute * 1,

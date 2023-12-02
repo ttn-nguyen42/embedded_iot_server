@@ -21,32 +21,18 @@
   <body>
     <main>
       <div class="main-content">
-        <h1>Room Occupancy</h1>
-        <div class="main-table">
-          <table>
-            <thead>
-              <tr>
-                <th width="100">Room ID</th>
-                <th width="300">Name</th>
-                <th width="100">Status</th>
-                <th width="100">Last Updated</th>
-              </tr>
-            </thead>
-            <tbody>
-              {{ range .Rooms }}
-              <tr>
-                <td>{{ .Id }}</td>
-                <td>{{ .Name }}</td>
-                {{ if (eq .Status "OCCUPIED") }}
-                <td><span class="label alert">Occupied</span></td>
-                {{ else }}
-                <td><span class="label success">Empty</span></td>
-                {{ end }}
-                <td>{{ .UpdatedAt }}</td>
-              </tr>
-              {{ end }}
-            </tbody>
-          </table>
+        <div class="over-bar">
+          <h1>Room Occupancy</h1>
+          <a id="refresh-button" class="button">Refresh</a>
+        </div>
+        <div
+          id="room-tables"
+          class="main-table"
+          hx-get="{{ .PartialTablePath }}"
+          hx-trigger="load, every {{ .PartialTableRefreshInterval }}, click from:#refresh-button"
+          hx-swap="innerHTML"
+        >
+          Loading
         </div>
       </div>
     </main>
@@ -54,6 +40,12 @@
     <!-- Compressed JavaScript -->
     <script
       src="https://cdn.jsdelivr.net/npm/foundation-sites@6.8.1/dist/js/foundation.min.js"
+      crossorigin="anonymous"
+    ></script>
+
+    <script
+      src="https://unpkg.com/htmx.org@1.9.9"
+      integrity="sha384-QFjmbokDn2DjBjq+fM+8LUIVrAgqcNW2s0PjAxHETgRn9l4fvX31ZxDxvwQnyMOX"
       crossorigin="anonymous"
     ></script>
     <script src="index.js"></script>
@@ -66,6 +58,13 @@
     }
 
     .main-table {
+      width: 100%;
+    }
+
+    .over-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       width: 100%;
     }
   </style>

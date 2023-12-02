@@ -20,7 +20,7 @@ import (
 func ServiceRegistration() func(app *fiber.App) {
 	return func(app *fiber.App) {
 		app.Get("/", UiDashboard)
-		
+		app.Get("/partials/room_table", UiPartialTable)
 		apiGroup := app.Group("/api")
 		apiGroup.Get("/rooms", ApiRoomsHandler)
 		apiGroup.Post("/rooms", ApiAddRoomHandler)

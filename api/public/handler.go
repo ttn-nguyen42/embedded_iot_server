@@ -59,10 +59,18 @@ func validateAddRoomRequest(req *models.CreateRoomRequest) error {
 }
 
 func UiDashboard(ctx *fiber.Ctx) error {
+
+	return ctx.Render("index", fiber.Map{
+		"PartialTablePath":            "/partials/room_table",
+		"PartialTableRefreshInterval": "5s",
+	})
+}
+
+func UiPartialTable(ctx *fiber.Ctx) error {
 	reqModel := &models.GetRoomsRequest{}
 	reqModel.Page, reqModel.Limit = helper.GetPageAndLimitFromCtx(ctx)
 
-	logger.SInfo("ApiRoomsHandler", zap.Any("req", reqModel))
+	logger.SInfo("UiPartialTable", zap.Any("req", reqModel))
 
 	resp, err := service.GetRoomService().GetRooms(ctx.Context(), reqModel)
 	if err != nil {
@@ -78,7 +86,7 @@ func UiDashboard(ctx *fiber.Ctx) error {
 		modifiedRooms = append(modifiedRooms, modifiedRoom)
 	}
 
-	return ctx.Render("index", fiber.Map{
+	return ctx.Render("partials/room_table", fiber.Map{
 		"Rooms": modifiedRooms,
 	})
 }

@@ -13,7 +13,11 @@ var cache *ristretto.Cache
 
 func Init() {
 	once.Do(func() {
-		store, err := ristretto.NewCache(&ristretto.Config{})
+		store, err := ristretto.NewCache(&ristretto.Config{
+			NumCounters: 5000000,
+			MaxCost:     5000000,
+			BufferItems: 64,
+		})
 		if err != nil {
 			log.Fatalf("cache.Init: err = %s", err)
 			return

@@ -1,5 +1,7 @@
 package models
 
+import "time"
+
 type ListCommon struct {
 	Page  uint64 `json:"-"`
 	Limit uint64 `json:"-"`
@@ -26,9 +28,10 @@ type CreateRoomRequest struct {
 }
 
 type UpdateRoomRequest struct {
-	Id     uint32 `json:"-"`
-	Name   string `json:"name"`
-	Status string `json:"status"`
+	Id        uint32    `json:"-"`
+	Name      string    `json:"name"`
+	Status    string    `json:"status"`
+	Timestamp time.Time `json:"timestamp"`
 }
 
 type CreateRoomResponse struct {
@@ -37,4 +40,10 @@ type CreateRoomResponse struct {
 
 type UpdateRoomResponse struct {
 	Id uint32 `json:"id"`
+}
+
+type RoomEventUpdateRequest struct {
+	Id        uint32 `json:"-"`
+	Status    string `json:"status"`
+	Timestamp string `json:"timestamp"`
 }

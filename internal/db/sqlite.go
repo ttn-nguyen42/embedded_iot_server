@@ -57,11 +57,15 @@ func Init(ctx context.Context, options ...Optioner) {
 }
 
 func createIfNotExists(p string) error {
-	_, err := os.Stat(p)
+	fs, err := os.Stat(p)
 	if err != nil {
 		if !os.IsNotExist(err) {
 			return custerror.FormatInternalError("db.sqlite.createIfNotExists: os.Stat err = %s", err)
 		}
+	}
+
+	if fs != nil {
+		return nil
 	}
 	dir := path.Dir(p)
 

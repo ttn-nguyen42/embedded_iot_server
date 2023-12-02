@@ -8,9 +8,9 @@ import (
 	"labs/htmx-blog/biz/models"
 	"labs/htmx-blog/biz/service"
 	"labs/htmx-blog/internal/app"
+	"labs/htmx-blog/internal/cache"
 	"labs/htmx-blog/internal/configs"
 	custdb "labs/htmx-blog/internal/db"
-	"labs/htmx-blog/internal/events"
 	custhttp "labs/htmx-blog/internal/http"
 	"labs/htmx-blog/internal/logger"
 	custmqtt "labs/htmx-blog/internal/mqtt"
@@ -36,10 +36,6 @@ func main() {
 					custhttp.WithRegistration(privateapi.ServiceRegistration()),
 					custhttp.WithMiddleware(privateapi.Middlewares(&configs.Private)...),
 				)),
-				app.WithNatsServer(events.New(
-					events.WithGlobalConfigs(&configs.EventStore),
-					events.WithZapLogger(zl.Sugar()),
-				)),
 				app.WithMqttServer(custmqtt.New(
 					custmqtt.WithGlobalConfigs(&configs.MqttStore),
 					custmqtt.WithZapLogger(zl),
@@ -53,6 +49,8 @@ func main() {
 						custdb.WithGlobalConfigs(&configs.Sqlite),
 					)
 					custdb.Migrate(&models.Room{})
+
+					cache.Init()
 
 					service.Init()
 					eventsapi.Init(ctx)

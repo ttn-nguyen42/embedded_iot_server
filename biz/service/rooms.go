@@ -95,11 +95,15 @@ func (s *RoomService) UpdateRoom(ctx context.Context, req *models.UpdateRoomRequ
 	query := sq.Update("rooms").Where("id = ?", req.Id)
 
 	if req.Name != "" {
-		query.Set("name", req.Name)
+		query = query.Set("name", req.Name)
 	}
 
 	if req.Status != "" {
-		query.Set("status", req.Status)
+		query = query.Set("status", req.Status)
+	}
+
+	if !req.Timestamp.IsZero() {
+		query = query.Set("last_updated", req.Timestamp.Format(time.RFC3339))
 	}
 
 	if err := s.db.Update(ctx, query); err != nil {

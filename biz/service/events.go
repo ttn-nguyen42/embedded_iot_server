@@ -26,7 +26,7 @@ func NewRoomEventsService() *RoomEventService {
 
 type UpdateRoomEventTracker struct {
 	req       *models.RoomEventUpdateRequest
-	timestamp *time.Time
+	timestamp time.Time
 	id        uint32
 	ctx       context.Context
 }
@@ -73,7 +73,7 @@ func (s *RoomEventService) validateUpdateEvent(tracker *UpdateRoomEventTracker) 
 		return custerror.FormatInvalidArgument("UpdateRoomStatus: timestamp is not RFC3339")
 	}
 
-	tracker.timestamp = &timestamp
+	tracker.timestamp = timestamp
 	tracker.id = req.Id
 	return nil
 }
@@ -83,8 +83,9 @@ func (s *RoomEventService) updateRoomStatus(tracker *UpdateRoomEventTracker) err
 	rs := s.roomService
 
 	resp, err := rs.UpdateRoom(tracker.ctx, &models.UpdateRoomRequest{
-		Id:     tracker.id,
-		Status: req.Status,
+		Timestamp: tracker.timestamp,
+		Id:        tracker.id,
+		Status:    req.Status,
 	})
 
 	if err != nil {

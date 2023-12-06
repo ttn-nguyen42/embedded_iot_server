@@ -103,7 +103,7 @@ func (s *RoomService) UpdateRoom(ctx context.Context, req *models.UpdateRoomRequ
 	}
 
 	if !req.Timestamp.IsZero() {
-		query = query.Set("last_updated", req.Timestamp.Format(time.RFC3339))
+		query = query.Set("updated_at", req.Timestamp.Format(time.RFC3339))
 	}
 
 	if err := s.db.Update(ctx, query); err != nil {
